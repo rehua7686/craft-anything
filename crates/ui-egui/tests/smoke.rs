@@ -1689,8 +1689,9 @@ fn settings_window_tabs_draw() {
     assert_eq!(h.state().settings.theme, "studio-light");
 
     // At the same window size, the same tab keeps its content bounds with and without scrolling.
+    // 800 tall: the Safety tab's rows are control height and fill 700 without the extra tools.
     let content_bounds = |overflow: bool| {
-        let mut h = harness_sized(egui::vec2(1000.0, 700.0), move || {
+        let mut h = harness_sized(egui::vec2(1000.0, 800.0), move || {
             let mut a = demo::app(demo::engine(Mode::Beginner, true));
             a.state.settings_open = true;
             a.state.settings_tab = craft_anything_ui_egui::state::SettingsTab::Safety;
@@ -3124,7 +3125,7 @@ fn a_project_is_renamed_duplicated_and_deleted_from_its_page() {
     h.get_by_label("Duplicate").click();
     assert!(wait(&mut h, |a| a.projects.iter().any(|w| w.manifest.name == "Snake II copy")), "the copy is listed");
 
-    h.get_by_label("Delete the project").click();
+    h.get_by_label("Delete…").click();
     h.run_steps(2);
     h.get_by_label("Delete Snake II?");
     h.get_by_label("Delete it").click();
@@ -3316,6 +3317,15 @@ fn remove_sits_by_the_name_and_the_key_field_matches_save() {
     let (remove, first) = (h.get_by_label("Remove Claude").rect(), h.get_by_label("In use").rect());
     assert!(remove.bottom() <= first.top(), "Remove {remove:?} is above the buttons {first:?}");
     let (field, save) = key_field_and_save(&h, "fal.ai key");
+    assert!((field.top() - save.top()).abs() < 0.5 && (field.bottom() - save.bottom()).abs() < 0.5, "field {field:?} vs Save {save:?}");
+}
+
+/// The open AI's key field in Settings is a control tall, like the Save beside it.
+#[test]
+fn an_apis_key_field_matches_its_save() {
+    let h = ai_settings();
+    let name = h.state().state.backend.clone().expect("an AI is open");
+    let (field, save) = key_field_and_save(&h, &format!("{name} key"));
     assert!((field.top() - save.top()).abs() < 0.5 && (field.bottom() - save.bottom()).abs() < 0.5, "field {field:?} vs Save {save:?}");
 }
 
