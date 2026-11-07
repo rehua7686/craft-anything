@@ -1466,3 +1466,7 @@ Connecting to {name}… {seconds} s	{name}에 연결하는 중… {seconds}초
 Stopped adding {name}.	{name} 추가를 멈췄습니다.
 It isn't there any more, so {program} runs in its place.	더 이상 그곳에 없어서 대신 {program}이(가) 실행됩니다.
 Use it	이것 사용
+Context budget (tokens)	컨텍스트 예산(토큰)
+Auto	자동
+How much of the conversation is sent before older parts are trimmed. Auto: what the model's server says it has room for, or a safe default when it doesn't say.	오래된 부분을 줄이기 전에 대화를 얼마나 보낼지입니다. 자동: 모델 서버가 알려 주는 여유 공간, 알려 주지 않으면 안전한 기본값.
+Set an AI's context budget	AI의 컨텍스트 예산 설정

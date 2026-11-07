@@ -1466,3 +1466,7 @@ Connecting to {name}… {seconds} s	正在连接 {name}… {seconds} 秒
 Stopped adding {name}.	已停止添加 {name}。
 It isn't there any more, so {program} runs in its place.	它已不在那里，因此改用 {program}。
 Use it	使用它
+Context budget (tokens)	上下文预算（令牌）
+Auto	自动
+How much of the conversation is sent before older parts are trimmed. Auto: what the model's server says it has room for, or a safe default when it doesn't say.	在截短较早内容之前发送多少对话。自动：模型服务器所说的容量，若它不说则用安全的默认值。
+Set an AI's context budget	设置 AI 的上下文预算
