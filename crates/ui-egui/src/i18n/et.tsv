@@ -1467,3 +1467,6 @@ Connecting to {name}… {seconds} s	Ühendamine: {name}… {seconds} s
 Stopped adding {name}.	{name} lisamine peatati.
 It isn't there any more, so {program} runs in its place.	Seda pole enam seal, nii et selle asemel käivitub {program}.
 Use it	Kasuta seda
+Interface font	Liidese font
+The font for the whole window.	Kogu akna font.
+Add a font file…	Lisa fondifail…

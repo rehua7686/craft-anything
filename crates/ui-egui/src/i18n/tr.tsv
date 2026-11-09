@@ -1467,3 +1467,6 @@ Connecting to {name}… {seconds} s	{name} sunucusuna bağlanılıyor… {second
 Stopped adding {name}.	{name} eklenmesi durduruldu.
 It isn't there any more, so {program} runs in its place.	Artık orada değil, bu yüzden yerine {program} çalışıyor.
 Use it	Bunu kullan
+Interface font	Arayüz yazı tipi
+The font for the whole window.	Tüm pencere için yazı tipi.
+Add a font file…	Yazı tipi dosyası ekle…

@@ -1469,3 +1469,6 @@ Connecting to {name}… {seconds} s	Connessione a {name}… {seconds} s
 Stopped adding {name}.	Aggiunta di {name} interrotta.
 It isn't there any more, so {program} runs in its place.	Non è più lì, quindi al suo posto si usa {program}.
 Use it	Usalo
+Interface font	Carattere dell'interfaccia
+The font for the whole window.	Il carattere di tutta la finestra.
+Add a font file…	Aggiungi un file di carattere…

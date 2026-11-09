@@ -334,6 +334,8 @@ pub enum Pick {
     SavePicture,
     /// The program an agent app runs ([`CraftApp::picking_program_for`] says which).
     AgentProgram,
+    /// A font file to add to the interface font list.
+    FontFile,
 }
 
 /// One open target, as the UI shows it.
@@ -581,6 +583,8 @@ pub struct CraftApp {
     view_dirty: bool,
     last_view: Option<Instant>,
     applied_theme: Option<(ThemeKind, bool)>,
+    /// The interface font currently installed (the stored choice), so it is only rebuilt on change.
+    applied_font: Option<String>,
     started: bool,
 }
 
@@ -668,6 +672,7 @@ impl CraftApp {
             view_dirty: true,
             last_view: None,
             applied_theme: None,
+            applied_font: None,
             started: false,
         }
     }
@@ -1166,6 +1171,7 @@ impl CraftApp {
                 Pick::GameFolder => pollster::block_on(d.set_title(tr("Pick the game's folder")).pick_folder()),
                 Pick::SavePicture => pollster::block_on(d.set_title(tr("Save the picture")).add_filter("PNG", &["png"]).set_file_name(&suggested).save_file()),
                 Pick::AgentProgram => pollster::block_on(d.set_title(tr("Where is the program?")).pick_file()),
+                Pick::FontFile => pollster::block_on(d.set_title(tr("Add a font file…")).add_filter("Fonts", &["ttf", "otf"]).pick_file()),
                 Pick::Pictures | Pick::Attach => None,
             };
             Ok(Done::Picked { pick, path: handle.map(|h| h.path().to_path_buf()) })
@@ -1728,6 +1734,13 @@ impl CraftApp {
                             self.settings.engines.ghidra.install_dir = Some(path);
                             self.settings_changed();
                         }
+                        Pick::FontFile => match crate::settings_ui::add_font_file(&path) {
+                            Ok(name) => {
+                                self.settings.font = format!("file:{name}");
+                                self.settings_changed();
+                            }
+                            Err(why) => self.toast(why, true),
+                        },
                         Pick::TargetFile | Pick::TargetFolder => {
                             self.state.make.target = craft_anything_engine::workspace::TargetRef::Local { path: path.clone() };
                             self.state.make.game = pick == Pick::TargetFolder;
@@ -1859,6 +1872,12 @@ impl CraftApp {
         if self.applied_theme != Some(want) {
             theme::apply(ctx, want.0, want.1);
             self.applied_theme = Some(want);
+        }
+        // Fonts are rebuilt only when the choice changes: set_fonts compares the bytes, and a broken
+        // choice has already fallen back inside the builder, so this cannot loop.
+        if self.applied_font.as_deref() != Some(self.settings.font.as_str()) {
+            theme::install_fonts_choice(ctx, &self.settings.font, &theme::user_fonts_dir());
+            self.applied_font = Some(self.settings.font.clone());
         }
         self.take_finished_jobs();
         if let Some(url) = self.open_url.take() {
