@@ -19,6 +19,12 @@ pub enum Layout {
     R16,
     /// Two unsigned 8-bit channels; blue is zero and alpha is opaque.
     Rg8,
+    /// Two unsigned 16-bit channels; blue is zero and alpha is opaque.
+    Rg16,
+    /// Three unsigned 16-bit channels; alpha is opaque.
+    Rgb16,
+    /// Four unsigned 16-bit channels, including alpha.
+    Rgba16,
     RHalf,
     RgHalf,
     RgbaHalf,
@@ -55,12 +61,30 @@ pub fn size(layout: Layout, width: u32, height: u32) -> Option<usize> {
         Layout::Alpha8 | Layout::R8 => w.checked_mul(h),
         Layout::Rgb565 | Layout::Rgba4444 | Layout::Argb4444 | Layout::RHalf | Layout::R16 | Layout::Rg8 => w.checked_mul(h)?.checked_mul(2),
         Layout::Rgb24 => w.checked_mul(h)?.checked_mul(3),
+        Layout::Rg16 => w.checked_mul(h)?.checked_mul(4),
+        Layout::Rgb16 => w.checked_mul(h)?.checked_mul(6),
+        Layout::Rgba16 => w.checked_mul(h)?.checked_mul(8),
         Layout::Rgba32 | Layout::Argb32 | Layout::Bgra32 | Layout::RgHalf | Layout::RFloat => w.checked_mul(h)?.checked_mul(4),
         Layout::RgbaHalf | Layout::RgFloat => w.checked_mul(h)?.checked_mul(8),
         Layout::RgbaFloat => w.checked_mul(h)?.checked_mul(16),
         Layout::Dxt1 | Layout::Bc4 => blocks.checked_mul(8),
         Layout::Dxt3 | Layout::Dxt5 | Layout::Bc5 | Layout::Bc6h | Layout::Bc6hSigned | Layout::Bc7 => blocks.checked_mul(16),
     }
+}
+
+fn unorm8(value: u16) -> u8 {
+    ((u32::from(value) * 255 + 32767) / 65535) as u8
+}
+
+/// Quantize unsigned channels; missing blue is zero and missing alpha is opaque.
+fn unorm16_pixels(samples: impl Iterator<Item = u16>, channels: usize) -> impl Iterator<Item = [u8; 4]> {
+    let mut samples = samples.map(unorm8);
+    std::iter::from_fn(move || {
+        let (r, g) = (samples.next()?, samples.next()?);
+        let b = if channels > 2 { samples.next()? } else { 0 };
+        let a = if channels > 3 { samples.next()? } else { 255 };
+        Some([r, g, b, a])
+    })
 }
 
 /// Treat RGB as linear light, alpha as coverage, and show a scalar texture in grey.
@@ -245,10 +269,13 @@ pub fn decode_with_limit(layout: Layout, width: u32, height: u32, data: &[u8], m
         Layout::Alpha8 => put(&mut data.iter().map(|a| [255, 255, 255, *a])),
         Layout::R8 => put(&mut data.iter().map(|r| [*r, *r, *r, 255])),
         Layout::R16 => put(&mut u16s.map(|value| {
-            let grey = ((u32::from(value) * 255 + 32767) / 65535) as u8;
+            let grey = unorm8(value);
             [grey, grey, grey, 255]
         })),
         Layout::Rg8 => put(&mut data.as_chunks::<2>().0.iter().map(|[r, g]| [*r, *g, 0, 255])),
+        Layout::Rg16 => put(&mut unorm16_pixels(u16s, 2)),
+        Layout::Rgb16 => put(&mut unorm16_pixels(u16s, 3)),
+        Layout::Rgba16 => put(&mut unorm16_pixels(u16s, 4)),
         Layout::Rgb24 => put(&mut data.as_chunks::<3>().0.iter().map(|[r, g, b]| [*r, *g, *b, 255])),
         Layout::Rgba32 => put(&mut data.as_chunks::<4>().0.iter().copied()),
         Layout::Argb32 => put(&mut data.as_chunks::<4>().0.iter().map(|[a, r, g, b]| [*r, *g, *b, *a])),
