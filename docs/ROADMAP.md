@@ -1682,6 +1682,8 @@ Owner: open · Status: in progress
       — claimed: Afloat16, branch bugfix/r3.12-certificate-signature-oids-20261110
 - [x] Distinguish literal punctuation and multi-valued attributes in the displayed X.509 issuer and subject.
       — claimed: Afloat16, branch bugfix/r3.12-certificate-name-rendering
+- [x] Match CMS signer certificates by issuer and serial number or subject key identifier; leave absent matches unknown instead of selecting an unrelated certificate and chain.
+      — claimed: Afloat16, branch bugfix/r3.12-cms-signer-identities-20261110
 - [x] Read HTTP Host fields only from the header section.
       — claimed: Afloat16, branch bugfix/r3.12-http-host-boundary-20261105
 - [x] Select certificate issuers by successful signature verification among matching names, follow self-issued key rollover, and report interrupted chains as incomplete.
