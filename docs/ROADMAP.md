@@ -1752,7 +1752,7 @@ Owner: open · Status: in progress
       — claimed: Afloat16, branch bugfix/r3.12-tensor-zero-dimension-product-20261105
 - [x] Find APK signatures through valid ZIP comments and framed central directories.
       — claimed: Afloat16, branch bugfix/r3.12-apk-sign-eocd-comment-boundary-20261105
-- [ ] Include an Android package's type-ID offset in resource identities while retaining its local type-name indices; reject shifted IDs outside the one-byte type field.
+- [x] Include an Android package's type-ID offset in resource identities while retaining its local type-name indices; reject shifted IDs outside the one-byte type field.
       — claimed: Afloat16, branch bugfix/r3.12-arsc-type-id-offset-20261110
 - [x] Keep Android resource packages, child chunks and library records inside their enclosing declared ranges.
       — claimed: Afloat16, branch bugfix/r3.12-arsc-parent-chunk-boundaries-20261109
