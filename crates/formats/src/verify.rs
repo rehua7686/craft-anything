@@ -382,13 +382,18 @@ pub struct MachoCms {
 pub fn verify_macho_cms(cms_der: &[u8], code_directory: &[u8]) -> Option<MachoCms> {
     let sd = pkcs7::parse_signed_data(cms_der)?;
     let mut notes = Vec::new();
+    if let Some(reason) = sd.signed_attrs_error {
+        notes.push(reason.into());
+    }
     let signer = sd.signer_cert().map(<[u8]>::to_vec);
     let info = signer.as_deref().and_then(der::certificate);
     // Does the signed messageDigest attribute cover this CodeDirectory?
     let binds_code_directory = match (&sd.message_digest, sd.digest) {
         (Some(md), Some(d)) => hexs(&d.hash(code_directory)).eq_ignore_ascii_case(md),
         _ => {
-            notes.push("no messageDigest signed attribute; cannot tie the signature to this CodeDirectory".into());
+            if sd.signed_attrs_error.is_none() {
+                notes.push("no messageDigest signed attribute; cannot tie the signature to this CodeDirectory".into());
+            }
             false
         }
     };
@@ -404,7 +409,7 @@ pub fn verify_macho_cms(cms_der: &[u8], code_directory: &[u8]) -> Option<MachoCm
     };
     let certs: Vec<&[u8]> = ordered_certs(&sd);
     let chain = verify_chain(&certs);
-    let authenticated = signature_valid.is_valid() && binds_code_directory;
+    let authenticated = sd.signed_attrs_error.is_none() && signature_valid.is_valid() && binds_code_directory;
     Some(MachoCms {
         signature_valid,
         binds_code_directory,
@@ -616,11 +621,15 @@ pub struct Pkcs7Signature {
 pub fn verify_pkcs7_detached(content: &[u8], pkcs7_der: &[u8]) -> Option<Pkcs7Signature> {
     let sd = pkcs7::parse_signed_data(pkcs7_der)?;
     let mut notes = Vec::new();
+    if let Some(reason) = sd.signed_attrs_error {
+        notes.push(reason.into());
+    }
     let signer = sd.signer_cert().map(<[u8]>::to_vec);
     let cert_sha = signer.as_deref().map(sha256_hex);
     let subject = signer.as_deref().and_then(der::certificate).map(|c| c.subject);
-    let signature_valid = match (sd.scheme(), signer.as_deref()) {
-        (Some(scheme), Some(cert)) => {
+    let signature_valid = match (sd.signed_attrs_error, sd.scheme(), signer.as_deref()) {
+        (Some(_), _, _) => Verified::Invalid,
+        (None, Some(scheme), Some(cert)) => {
             let Some(spki) = der::certificate_spki(cert) else {
                 return Some(Pkcs7Signature {
                     signature_valid: Verified::unsupported("signer key unreadable"),
@@ -653,8 +662,8 @@ pub fn verify_pkcs7_detached(content: &[u8], pkcs7_der: &[u8]) -> Option<Pkcs7Si
                 None => verify_signature(spki, scheme, content, &sd.signature),
             }
         }
-        (None, _) => Verified::unsupported(format!("signature algorithm {} is not checked", sd.signature_algorithm)),
-        (_, None) => Verified::unsupported("no signer certificate"),
+        (None, None, _) => Verified::unsupported(format!("signature algorithm {} is not checked", sd.signature_algorithm)),
+        (None, _, None) => Verified::unsupported("no signer certificate"),
     };
     Some(Pkcs7Signature { signature_valid, signer_subject: subject, certificate_sha256: cert_sha, chain: verify_chain(&ordered_certs(&sd)), notes })
 }
