@@ -1467,3 +1467,6 @@ Connecting to {name}… {seconds} s	{name}-თან დაკავშირე
 Stopped adding {name}.	{name}-ის დამატება შეჩერდა.
 It isn't there any more, so {program} runs in its place.	ის აღარ არის იქ, ამიტომ მის ნაცვლად {program} ეშვება.
 Use it	გამოყენება
+Interface font	ინტერფეისის შრიფტი
+The font for the whole window.	შრიფტი მთელი ფანჯრისთვის.
+Add a font file…	შრიფტის ფაილის დამატება…
