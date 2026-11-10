@@ -149,6 +149,9 @@ const FORMATS: &[(i32, &str)] = &[
     (29, "DXT5Crunched"),
     (62, "RG16"),
     (63, "R8"),
+    (72, "RG32"),
+    (73, "RGB48"),
+    (74, "RGBA64"),
 ];
 
 /// A pixel format's name, or `format <id>`.
@@ -182,6 +185,9 @@ fn layout(format: i32) -> Option<Layout> {
         27 => Layout::Bc5,
         62 => Layout::Rg8,
         63 => Layout::R8,
+        72 => Layout::Rg16,
+        73 => Layout::Rgb16,
+        74 => Layout::Rgba16,
         _ => return None,
     })
 }

@@ -1475,6 +1475,8 @@ Owner: open · Status: in progress
 
 - [x] Decode Unreal DXT3 (BC2) texture blocks, including explicit alpha and clipped edge blocks.
       — claimed: Afloat16, branch feature/r3.9-dxt3-textures-20261110
+- [x] Decode Unity RG32, RGB48 and RGBA64 textures without discarding their 16-bit channel layout.
+      — claimed: Afloat16, branch feature/r3.9-unorm16-textures-20261110
 
 ### R3.11 Single-file apps, game files and stand-in backends
 Owner: open · Status: in progress
