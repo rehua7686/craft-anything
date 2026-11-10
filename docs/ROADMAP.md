@@ -1736,6 +1736,8 @@ Owner: open · Status: in progress
       — claimed: Afloat16, branch bugfix/r3.12-iostore-complete-header-20261105
 - [x] Reject CBOR collections that exceed the EVM metadata reader's limits and invalid text strings.
       — claimed: Afloat16, branch bugfix/r3.12-evm-cbor
+- [x] Keep EVM bytecode intact when its CBOR trailer repeats a metadata key or uses a non-text map key.
+      — claimed: Afloat16, branch bugfix/r3.12-evm-cbor-map-keys-20261110
 - [x] Require evidence of a rejecting payment branch before labelling EVM functions nonpayable; reading CALLVALUE alone accepts payments.
       — claimed: Afloat16, branch bugfix/r3.12-evm-payment-guards
 - [x] Avoid rescanning every retained EVM selector for repeated dispatcher comparisons.
