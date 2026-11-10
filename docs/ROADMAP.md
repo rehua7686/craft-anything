@@ -1861,7 +1861,7 @@ Owner: open · Status: in progress
       — claimed: Chr0mium24, branch bugfix/r3.12-codesign-flag-names
 - [x] Keep code-signature children and verification reads within their declared superblob.
       — claimed: Afloat16, branch bugfix/r3.12-codesign-superblob-length-boundary-20261105
-- [ ] Require complete, single-valued CMS message-digest and content-type signed attributes with the specified tags, and bind the content type to the encapsulated content before reporting authentication.
+- [x] Require complete, single-valued CMS message-digest and content-type signed attributes with the specified tags, and bind the content type to the encapsulated content before reporting authentication.
       — claimed: Afloat16, branch bugfix/r3.12-cms-signed-attributes-20261110
 - [x] Reject out-of-range or unterminated library names in the ELF dynamic string table.
       — claimed: Afloat16, branch bugfix/r3.12-elf-dynamic-names
