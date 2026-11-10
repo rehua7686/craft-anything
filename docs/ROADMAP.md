@@ -1699,6 +1699,8 @@ Owner: open · Status: in progress
       — claimed: Afloat16, branch bugfix/r3.12-bom-directory-bounds
 - [x] Count empty tensor shapes consistently across axis orders.
       — claimed: Afloat16, branch bugfix/r3.12-tensor-zero-dimension-product-20261105
+- [x] Read certificate choices from the SignedData certificate set only and enforce the certificate limit across the blob.
+      — claimed: Afloat16, branch bugfix/r3.12-signeddata-certificate-set
 - [x] Find APK signatures through valid ZIP comments and framed central directories.
       — claimed: Afloat16, branch bugfix/r3.12-apk-sign-eocd-comment-boundary-20261105
 - [x] Keep Android resource packages, child chunks and library records inside their enclosing declared ranges.
