@@ -752,13 +752,23 @@ fn ai(app: &mut CraftApp, ui: &mut Ui) {
         crate::detect_tabs::resolve(app.state.detect_tab, providers, harnesses)
     };
     ui.horizontal(|ui| {
-        widgets::caption(ui, "Found on this computer");
-        ui.add_space(12.0);
+        // A disclosure, not a truncated label: it takes keyboard focus, Enter opens it, and the
+        // sentence only takes room while it is open.
+        egui::CollapsingHeader::new(RichText::new(tr("How detection works")).color(t.text_faint).size(theme::CAPTION))
+            .id_salt("detect-help")
+            .show_background(false)
+            .show(ui, |ui| {
+                ui.label(RichText::new(tr("Detection looks at this computer: API keys in your environment, model servers running here or on your network, and coding agents you already installed. It asks those servers for their model list. Nothing is uploaded, and nothing is added unless you choose it.")).color(t.text_faint).size(theme::CAPTION));
+            });
+        ui.add_space(8.0);
         tab = crate::detect_tabs::bar(ui, &mut app.state.detect_tab, &detected);
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
             if app.detecting {
                 ui.add(crate::widgets::Spinner::new().color(t.accent));
-            } else if widgets::secondary(ui, Some("radar"), "Detect").clicked() {
+            } else if widgets::secondary(ui, Some("radar"), "Detect")
+                .on_hover_text(tr("Detection looks at this computer: API keys in your environment, model servers running here or on your network, and coding agents you already installed. It asks those servers for their model list. Nothing is uploaded, and nothing is added unless you choose it."))
+                .clicked()
+            {
                 app.detect_backends();
             }
         });
