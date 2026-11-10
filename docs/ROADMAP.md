@@ -1605,6 +1605,8 @@ Owner: open · Status: in progress
 - [x] WITHOUT ROWID rows stored before ALTER TABLE ADD COLUMN show the added columns' defaults,
       as rowid tables already do, instead of NULL.
       — claimed: Plastic-time, branch bugfix/r3.12-sqlite-without-rowid-added-columns
+- [x] Discard decoded SQLite rows before the requested offset instead of retaining every preceding row, and keep zero-sized pages bounded while preserving readable-row offsets and key order.
+      — claimed: Afloat16, branch bugfix/r3.12-sqlite-page-retention-20261110
 - [x] Fill added SQLite columns whose DEFAULT is a hex integer or a literal in parentheses
       (`DEFAULT 0x10`, `DEFAULT (5)`); they show NULL with a note today. Hex integers keep
       SQLite's 64-bit two's-complement value; one parenthesized literal is filled, while
