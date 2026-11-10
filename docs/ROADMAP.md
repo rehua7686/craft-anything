@@ -938,6 +938,8 @@ Owner: open · Status: in progress
       — claimed: Plastic-time, branch bugfix/r2.2-yaml-null-table
 - [ ] Live-check #116 on Windows: install Hermes natively, start the app from a launcher, and see
       Settings → AI offer it; #116's "error after every message" has no text yet (asked)
+- [x] Refuse multi-document YAML configs before planning edits or removing registrations.
+      — claimed: Plastic-time, branch rrfz/bugfix-r2.2-yaml-single-document
 - [x] A Hermes `config.yaml` that starts with a byte-order mark gets our entry in its own
       `mcp_servers` table, not in a second one that hides the person's servers from Hermes.
       — claimed: Plastic-time, branch bugfix/r2.2-yaml-config-bom
