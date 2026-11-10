@@ -667,6 +667,73 @@ impl<'a> D<'a> {
         self.push(N::Global { prefix: "enum case for".into(), inner: Box::new(inner), suffix: String::new() })
     }
 
+    /// A whole type as the operand of a witness accessor. A module, a name, a member or another
+    /// global (a metadata or witness symbol) before it is not one.
+    fn witness_type(&mut self) -> R<N> {
+        if matches!(self.stack.last(), Some(N::Global { .. } | N::Entity { .. } | N::Conformance { .. } | N::Extension { .. })) {
+            return Err("witness operand is not a type".into());
+        }
+        self.pop_type()
+    }
+
+    /// A conformance as the new witness accessors read it: the module that declares it, then the
+    /// protocol (a protocol type, or a name inside a module or a type), then a whole type. Unlike
+    /// `conformance`, a type, a member or a global is not accepted as the module.
+    fn witness_conformance(&mut self) -> R<N> {
+        if matches!(self.stack.last(), Some(N::Sig { .. })) {
+            return Err("a conformance with generic requirements is not supported".into());
+        }
+        let module = self.witness_module()?;
+        let proto = match self.pop()? {
+            n @ N::Nominal { kind: 'P', .. } => n,
+            N::Ident(name) | N::Private(name) => {
+                let ctx = match self.pop()? {
+                    N::Ident(parent) => N::Module(parent),
+                    parent @ (N::Module(_) | N::Nominal { .. }) => parent,
+                    _ => return Err("expected a context".into()),
+                };
+                N::Nominal { kind: 'P', ctx: Box::new(ctx), name }
+            }
+            _ => return Err("expected a protocol".into()),
+        };
+        let ty = self.witness_type()?;
+        Ok(N::Conformance { ty: Box::new(ty), proto: Box::new(proto), module: Box::new(module) })
+    }
+
+    fn witness_module(&mut self) -> R<N> {
+        match self.pop()? {
+            N::Ident(name) => Ok(N::Module(name)),
+            module @ N::Module(_) => Ok(module),
+            _ => Err("expected a module".into()),
+        }
+    }
+
+    /// `WT`: a conformance, the path of an associated type, and the protocol that type conforms
+    /// to. The path is a first element, then `_`, then any further elements; an element is a name,
+    /// optionally followed by the protocol that declares it.
+    fn associated_type_witness_accessor(&mut self) -> R<()> {
+        let proto = self.witness_type()?;
+        let mut parts = Vec::new();
+        let mut closed = false;
+        while !closed {
+            let mut node = self.pop()?;
+            if matches!(node, N::FirstMarker) {
+                closed = true;
+                node = self.pop()?;
+            }
+            let part = match node {
+                N::Ident(name) => name,
+                owner @ N::Nominal { kind: 'P', .. } => format!("{}.{}", path(&owner, 0), self.pop_name()?),
+                _ => return Err("expected an associated type name".into()),
+            };
+            parts.push(part);
+        }
+        parts.reverse();
+        let conf = self.witness_conformance()?;
+        let prefix = format!("associated type witness table accessor for {} : {} in", parts.join("."), render(&proto, 0));
+        self.push(N::Global { prefix, inner: Box::new(conf), suffix: String::new() })
+    }
+
     fn note_param(&mut self, idx: u64) {
         self.max_param = Some(self.max_param.map_or(idx, |m| m.max(idx)));
     }
@@ -931,6 +998,27 @@ impl<'a> D<'a> {
                     }
                     b'L' => self.global("lazy protocol witness table cache variable for"),
                     b'C' => self.enum_case(),
+                    b'I' => {
+                        let conf = self.witness_conformance()?;
+                        self.push(N::Global {
+                            prefix: "instantiation function for generic protocol witness table for".into(),
+                            inner: Box::new(conf),
+                            suffix: String::new(),
+                        })
+                    }
+                    b'l' => {
+                        let conf = self.witness_conformance()?;
+                        let ty = self.witness_type()?;
+                        let prefix = format!("lazy protocol witness table accessor for type {} and conformance", render(&ty, 0));
+                        self.push(N::Global { prefix, inner: Box::new(conf), suffix: String::new() })
+                    }
+                    b'b' => {
+                        let base = self.witness_type()?;
+                        let conf = self.witness_conformance()?;
+                        let prefix = format!("base witness table accessor for {} in", render(&base, 0));
+                        self.push(N::Global { prefix, inner: Box::new(conf), suffix: String::new() })
+                    }
+                    b'T' => self.associated_type_witness_accessor(),
                     _ => Err("unsupported witness kind".into()),
                 }
             }
