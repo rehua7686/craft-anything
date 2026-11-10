@@ -287,7 +287,11 @@ fn decode_mappings(m: &str, map: &mut SourceMap, budget: &mut usize) -> Result<(
                 name += vlq(bytes, &mut pos).ok_or(SourceMapError::BadMappings(count))?;
                 n = Some(to_u32(name, count)?);
             }
-            seg.original = Some((to_u32(src, count)?, to_u32(ol, count)?, to_u32(oc, count)?, n));
+            let source = to_u32(src, count)?;
+            if source as usize >= map.sources.len() || n.is_some_and(|index| index as usize >= map.names.len()) {
+                return Err(SourceMapError::BadMappings(count));
+            }
+            seg.original = Some((source, to_u32(ol, count)?, to_u32(oc, count)?, n));
         }
         if !matches!(bytes.get(pos), None | Some(b',') | Some(b';')) {
             return Err(SourceMapError::BadMappings(count));
@@ -353,6 +357,16 @@ pub fn base64_decode(text: &str) -> Option<Vec<u8>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn mapping_indices_must_refer_to_declared_entries() {
+        for mappings in ["ACAA", "AAAAC"] {
+            let json = serde_json::json!({"version":3,"sources":["source.js"],"names":["name"],"mappings":mappings});
+            assert!(matches!(parse(json.to_string().as_bytes(), Limits::default()), Err(SourceMapError::BadMappings(1))));
+        }
+        let valid = br#"{"version":3,"sources":[null],"names":["name"],"mappings":"AAAAA"}"#;
+        assert!(parse(valid, Limits::default()).is_ok());
+    }
 
     #[test]
     fn lookup_keeps_coincident_mappings_and_stops_at_an_unmapped_segment() {
