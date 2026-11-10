@@ -2054,6 +2054,12 @@ Owner: open · Status: in progress
       prints `(() -> Swift.Int)?`. An optional protocol composition read `main.P & main.Q?` for
       `(main.P & main.Q)?`.
       — claimed: Chr0mium24, branch bugfix/r3.12-swift-demangle-optional-functions
+- [x] Swift special types decode. A type written with `X` and a kind letter (a non-escaping
+      closure `XE`, an `AnyObject` or class-and-protocol existential, a protocol metatype, a
+      `@convention` or `@autoclosure` function, `Self`, a `weak` or `unowned` type) was reported
+      invalid ("unsupported special type"): `_$s13IDEConsoleKit0A5ThemeC22infoTypeThumbnailImageSo7NSImageCvgAFyXEfU_`
+      is `closure #1 () -> __C.NSImage in IDEConsoleKit.IDEConsoleTheme.infoTypeThumbnailImage.getter : __C.NSImage`.
+      — claimed: Chr0mium24, branch bugfix/r3.12-swift-demangle-special-types
 - [x] Python 3.5.0, 3.5.1 and 3.5.2 wrote magic number 3350 into their `.pyc` files, and 3.5.3
       moved to 3351. A file with 3350 is reported as a 3.5 pre-release (`is_release: false`), with
       a note that its code layout may differ. Count 3350 and 3351 as releases of 3.5.
