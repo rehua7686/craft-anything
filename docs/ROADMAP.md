@@ -1547,7 +1547,7 @@ Owner: open · Status: in progress
 
 ### R3.12 Format parser correctness
 Owner: open · Status: in progress
-- [ ] Reject source map mappings with missing source or name entries.
+- [x] Reject source map mappings with missing source or name entries.
       — claimed: Plastic-time, branch rrfz/bugfix-r3.12-mapping-index-20261110
 - [x] Refuse oversized GNU tar long names and link targets instead of silently truncating member identities.
       — claimed: Afloat16, branch bugfix/r3.12-tar-long-identities-20261109
