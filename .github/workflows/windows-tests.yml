@@ -1,0 +1,41 @@
+# The gate runs the tests on Ubuntu, where `cfg(windows)` code is not compiled at all, so the
+# Windows-only tests (search paths, consoles, Job Objects) only ever ran on a contributor's own
+# machine. This job runs them on a Windows runner too, so a change that breaks Windows fails here
+# instead of in a release.
+#
+# It runs the platform crate's units: that is where those tests live. The `ai` crate's suite is
+# left out for now, because `cli_agents::unfinished::tests::a_killed_turns_session_is_deleted_by_the_next_sweep`
+# hangs on a Windows host (the process it starts keeps its output pipes open), which would time the
+# job out rather than report anything.
+name: Windows tests
+
+# Every PR and every push to main: a Windows-only regression can arrive in any crate that touches
+# platform code, and a daily run would report it only after it has been merged.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A newer push to a PR branch cancels its older run; every push to main runs to the end.
+concurrency:
+  group: windows-tests-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  windows-tests:
+    runs-on: windows-latest
+    # The tests themselves take seconds; a cold build of the engine they sit on takes minutes.
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+      # The runner image has the MSVC tools a Windows Rust build links against.
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: windows-tests
+      - name: Windows-only unit tests
+        run: cargo test -p craft-anything-platform --lib
