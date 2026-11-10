@@ -14,7 +14,7 @@ fn align16(n: usize) -> Option<usize> {
 /// Name field length (NUL-terminated, rounded up to 16), and the trimmed name.
 fn name_at(data: &[u8], off: usize, max_name: usize) -> Option<(String, usize)> {
     let rest = data.get(off..)?;
-    let end = rest.iter().take(max_name.clamp(1, 1024)).position(|&b| b == 0)?;
+    let end = rest.iter().take(max_name.clamp(1, 1024) + 1).position(|&b| b == 0)?;
     let name = String::from_utf8_lossy(rest.get(..end)?).into_owned();
     Some((name, align16(end + 1)?))
 }
@@ -141,6 +141,20 @@ fn walk(data: &[u8], first: usize, parent: &str, limits: &Limits, img: &mut FsIm
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn name_limit_counts_name_bytes_without_terminator() {
+        let mut data = craft_anything_testkit::firmware::romfs_image();
+        let limits = Limits { max_name: 12, ..Limits::default() };
+        data[80..92].copy_from_slice(b"readme12.txt");
+        data[92] = 0;
+        let image = read(&data, &limits);
+        assert!(image.complete, "{:?}", image.warnings);
+        assert!(image.entries.iter().any(|entry| entry.path == "readme12.txt"));
+        data[92] = b'x';
+        data[93] = 0;
+        assert!(!read(&data, &limits).complete);
+    }
 
     #[test]
     fn reads_a_small_image() {
